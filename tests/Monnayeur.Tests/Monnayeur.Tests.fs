@@ -1,9 +1,27 @@
 module Monnayeur.Tests
 
+open System
 open NUnit.Framework
 open FsUnit
 open Monnayeur
 
 [<Test>]
-let ``Example Test`` () =
-    1 |> should equal 1
+let ``un lundi à 10h, ajouter 1€ renvoie 10h20`` () =
+  let maintenant = new DateTime(2016, 8, 1, 10, 0, 0)
+  let monnayeur = créer maintenant
+  monnayeur |> ajoutePièce 1 |> heureLimite |> should equal (maintenant.AddMinutes 20.)
+
+[<Test>]
+let ``un lundi à 8h, ajouter 4€ renvoie 10h20`` () =
+  let maintenant = new DateTime(2016, 8, 1, 8, 0, 0)
+  let limite = maintenant.Add (new TimeSpan(2, 20, 0))
+  let monnayeur = créer maintenant
+  monnayeur |> ajoutePièce 1 |> ajoutePièce 2 |> ajoutePièce 1 |> heureLimite |> should equal limite
+
+[<Test>]
+let ``la pause de midi n'est pas décomptée`` () =
+  let maintenant = new DateTime(2016, 8, 1, 11, 0, 0)
+  let limite = maintenant.Add (new TimeSpan(4, 0, 0))
+  let monnayeur = créer maintenant
+  monnayeur |> ajoutePièce 1 |> ajoutePièce 2 |> heureLimite |> should equal limite
+
