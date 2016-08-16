@@ -21,7 +21,7 @@ let ``un lundi à 8h, ajouter 4€ renvoie 10h20`` () =
 [<Test>]
 let ``la pause de midi n'est pas décomptée`` () =
   let maintenant = new DateTime(2016, 8, 1, 11, 0, 0)
-  let limite = maintenant.Add (new TimeSpan(4, 0, 0))
+  let limite = maintenant.AddHours(4.)
   let monnayeur = créer maintenant
   monnayeur |> ajoutePièce 1 |> ajoutePièce 2 |> heureLimite |> should equal limite
 
