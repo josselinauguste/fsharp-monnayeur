@@ -22,24 +22,16 @@ let heureLimite (Monnayeur (début, pièces)) =
 
   let (|Gratuit|_|) (débutGratuité, finGratuité) (début, fin) =
     match fin >= débutGratuité && début <= finGratuité with
-    | true when début > débutGratuité -> Some début
-    | true -> Some débutGratuité
+    | true when début > débutGratuité -> (finGratuité - début) |> Some
+    | true -> (finGratuité - débutGratuité) |> Some
     | false -> None
 
-  let compensePauseDeMidi (début: DateTime) (durée: TimeSpan) =
-    let fin = début.Add(durée)
-    let débutGratuité = début.Date.AddHours 12.
-    let finGratuité = débutGratuité.AddHours 2.
-    match (début, fin) with
-    | Gratuit (débutGratuité, finGratuité) débutDécompte -> durée + (finGratuité - débutDécompte)
+  let compensePériodesGratuites (début: DateTime) (durée: TimeSpan) =
+    let pauseMidi = (début.Date.AddHours 12., début.Date.AddHours 14.)
+    let nuit = (début.Date.AddHours 18., (début.Date.AddHours 18.).AddHours 14.)
+    match (début, début.Add(durée)) with
+    | Gratuit pauseMidi duréeGratuite -> durée + duréeGratuite
+    | Gratuit nuit duréeGratuite -> durée + duréeGratuite
     | _ -> durée
 
-  let compenseNuit (début: DateTime) (durée: TimeSpan) =
-    let fin = début.Add(durée)
-    let débutGratuité = début.Date.AddHours 18.
-    let finGratuité = débutGratuité.AddHours 14.
-    match (début, fin) with
-    | Gratuit (débutGratuité, finGratuité) débutDécompte -> durée + (finGratuité - débutDécompte)
-    | _ -> durée
-
-  durée montant TimeSpan.Zero |> compensePauseDeMidi début |> compenseNuit début |> début.Add
+  durée montant TimeSpan.Zero |> compensePériodesGratuites début |> début.Add
